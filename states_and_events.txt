@@ -1,0 +1,41 @@
+Events:
+    TESTER_EVENT_INTERFACE_DISCONNECTED,
+    TESTER_EVENT_INTERFACE_SETTLED,
+    TESTER_EVENT_INTERVAL_TIMER_ELAPSED,
+    TESTER_EVENT_TEST_PASSED,
+    TESTER_EVENT_TEST_FAILED,
+    TESTER_EVENT_TEST_TIMED_OUT,
+    TESTER_EVENT_RECOVERY_TASK_ENDED,
+    TESTER_EVENT_RESTART,
+    TESTER_EVENT_INITIALISE,
+    TESTER_EVENT_CLEANUP,
+    
+Tester mode states:
+  - stopped
+  - sleeping (i.e. waiting on interval timer to elapse)
+  - testing
+  - recovering (waiting on recovery task)
+
+Events that should be handled in all states:
+    TESTER_EVENT_RESTART,
+    TESTER_EVENT_CLEANUP,
+
+Events that stopped state is interested in:
+    TESTER_EVENT_INTERFACE_SETTLED,
+    TESTER_EVENT_RECOVERY_TASK_ENDED,
+    TESTER_EVENT_INITIALISE,
+
+Events that sleeping state is interested in:
+    TESTER_EVENT_INTERFACE_DISCONNECTED,
+    TESTER_EVENT_INTERVAL_TIMER_ELAPSED,
+
+Events that testing state is interested in:
+    TESTER_EVENT_INTERFACE_DISCONNECTED,
+    TESTER_EVENT_TEST_PASSED,
+    TESTER_EVENT_TEST_FAILED,
+    TESTER_EVENT_TEST_TIMED_OUT,
+
+Events that recovering state is interested in:
+    TESTER_EVENT_INTERFACE_DISCONNECTED,
+    TESTER_EVENT_RECOVERY_TASK_ENDED,
+

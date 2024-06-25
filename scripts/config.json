@@ -1,0 +1,86 @@
+{ 
+	"interfaces": { 
+		"lo8": { 
+			"success_condition": "all_tests_must_pass",
+			"settling_delay_secs": 5,
+			"passing_interval_secs": 10,
+			"failing_interval_secs": 3,
+			"pass_threshold": 5,
+			"fail_threshold": 3,
+			"response_timeout_secs": 15,
+			"failing_tests_metrics_increase": 100,
+			"tests": [
+				{
+					"executable": "ping",
+					"label": "Ping test",
+					"response_timeout_secs": 5,
+					"params": {
+						"interface_mark": 1,
+						"hostname": "127.0.0.1",
+						"count": "3"
+					}
+				},
+				{
+					"executable": "ping",
+					"label": "Ping test #2",
+					"response_timeout_secs": 11,
+					"params": {
+						"interface_mark": 1,
+						"hostname": "127.0.01"
+					}
+				}
+			],
+			"recovery_tasks": [
+				{
+					"executable": "restart_interface",
+					"label": "restart interface",
+					"response_timeout_secs": 5,
+					"params": {
+					}
+				},
+				{
+					"executable": "really_restart_interface",
+					"label": "really really restart interface",
+					"response_timeout_secs": 5,
+					"params": {
+					}
+				}
+			]
+		}
+	},
+	"todo": {
+		"test_types": [
+			{
+				"test_type": "dns",
+				"label": "DNS test"
+			},
+			{
+				"test_type": "http",
+				"label": "HTTP test"
+			},
+			{
+				"test_type": "dns_configured",
+				"label": "DNS configured test"
+			},
+			{
+				"test_type": "tcp_connection",
+				"label": "TCP connection test"
+			},
+			{
+				"test_type": "other_interface_state",
+				"label": "Test another interface's state"
+			}
+		],
+		"loopback": { 
+			"interval": 20, 
+			"tests": [
+				{
+					"name": "ping",
+					"hostname": "127.0.0.1",
+					"count": 1
+				}
+			]
+		}
+	} 
+}
+
