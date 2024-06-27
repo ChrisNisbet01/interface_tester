@@ -2,8 +2,9 @@
 #include "config.h"
 #include "debug.h"
 #include "dump.h"
-#include "tester_common.h"
 #include "interface_connection.h"
+#include "interface_tester.h"
+#include "tester_common.h"
 #include "shared.h"
 #include "strings.h"
 #include "utils.h"
@@ -258,6 +259,23 @@ iface_handle_state(
 }
 
 static int
+iface_handle_test(
+    struct ubus_context * const ubus, struct ubus_object * const obj,
+    struct ubus_request_data * const req, const char * const method,
+    struct blob_attr * const msg)
+{
+    UNUSED(ubus);
+    UNUSED(req);
+    UNUSED(method);
+    UNUSED(msg);
+    interface_st * const iface = container_of(obj, interface_st, ubus_object);
+
+    interface_tester_send_event(iface, TESTER_EVENT_TEST_RUN_REQUESTED);
+
+    return UBUS_STATUS_OK;
+}
+
+static int
 iface_handle_all_states(
     struct ubus_context * const ubus, struct ubus_object * const obj,
     struct ubus_request_data * const req, const char * const method,
@@ -412,6 +430,7 @@ static struct
     ubus_method iface_object_methods[] =
 {
     { .name = "state", .handler = iface_handle_state },
+    { .name = "start_test_run", .handler = iface_handle_test },
 };
 
 static struct

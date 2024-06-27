@@ -18,6 +18,7 @@ tester_event_to_str(tester_event_t const event)
     [TESTER_EVENT_INTERFACE_DISCONNECTED] = "connection disconnected",
     [TESTER_EVENT_INTERFACE_SETTLED] = "connection settled",
     [TESTER_EVENT_INTERVAL_TIMER_ELAPSED] = "interval timer elapsed",
+    [TESTER_EVENT_TEST_RUN_REQUESTED] = "start_test_run",
     [TESTER_EVENT_TEST_PASSED] = "test passed",
     [TESTER_EVENT_TEST_FAILED] = "test failed",
     [TESTER_EVENT_TEST_TIMED_OUT] = "test timed out",

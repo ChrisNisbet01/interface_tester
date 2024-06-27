@@ -338,6 +338,16 @@ e.g.
 }
 ```
 
+### Start a test run on an interface
+e.g.
+```console
+ubus call interface.tester.interface.wan start_test_run
+```
+
+#### Notes
+This command will only start a test run if the interface tester is currently
+sleeping - i.e. waiting for the interval tier to elapse.
+
 ## UBUS events
 Ubus events are sent out by the application under certain circumstances.
 

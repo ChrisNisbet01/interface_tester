@@ -874,6 +874,11 @@ sleeping_state_event_handler(
 
     switch (event)
     {
+    case TESTER_EVENT_TEST_RUN_REQUESTED:
+        tester_interval_timer_stop(tester);
+        tester_start(tester);
+        break;
+
     case TESTER_EVENT_INTERVAL_TIMER_ELAPSED:
         tester_start(tester);
         break;
