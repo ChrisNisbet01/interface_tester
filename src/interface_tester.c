@@ -78,12 +78,14 @@ next_recovery_task_index(interface_recovery_st * const recovery)
     return next_task;
 }
 
+#if WITH_METRICS_ADJUSTMENT
 static void
 interface_adjust_route_metrics(interface_st * const iface, uint32_t const amount)
 {
     ubus_send_metrics_adjust_request(
         &iface->ctx->ubus_conn.ctx, iface->name, amount);
 }
+#endif
 
 static void
 recovery_state_transition(
@@ -399,8 +401,11 @@ transition_to_operational_state(interface_st * const iface)
 
     recovery_state_transition(recovery, RECOVERY_STATE_OPERATIONAL);
     recovery->recovery_index = 0;
+
+#if WITH_METRICS_ADJUSTMENT
     interface_adjust_route_metrics(iface, 0);
     recovery->metrics_are_adjusted = false;
+#endif
 
     bool const are_operational = true;
 
@@ -412,17 +417,22 @@ static void
 transition_to_broken_state(interface_st * const iface)
 {
     interface_recovery_st * const recovery = &iface->recovery;
-    interface_config_st * const config = &iface->config;
 
     DPRINTF("%s\n", iface->name);
 
     recovery_state_transition(recovery, RECOVERY_STATE_BROKEN);
+
+#if WITH_METRICS_ADJUSTMENT
+    {
+    interface_config_st * const config = &iface->config;
 
     if (config->failing_tests_metrics_increase > 0)
     {
         interface_adjust_route_metrics(iface, config->failing_tests_metrics_increase);
         recovery->metrics_are_adjusted = true;
     }
+    }
+#endif
 
     bool const are_operational = false;
 
@@ -722,14 +732,18 @@ tester_start(interface_tester_st * const tester)
 static void
 recovery_cleanup(interface_recovery_st * const recovery)
 {
-    interface_st * const iface = container_of(recovery, interface_st, recovery);
-
     interface_tester_kill_process(&recovery->proc);
     recovery_response_timer_stop(recovery);
+#if WITH_METRICS_ADJUSTMENT
+    {
+    interface_st * const iface = container_of(recovery, interface_st, recovery);
+
     if (recovery->metrics_are_adjusted)
     {
         interface_adjust_route_metrics(iface, 0);
     }
+    }
+#endif
     recovery->recovery_index = 0;
 }
 

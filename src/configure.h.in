@@ -1,0 +1,6 @@
+/* config.h.in - template for configure.h - DO NOT EDIT. */
+#pragma once
+
+#define DEBUG @DEBUG_VALUE@
+#define WITH_METRICS_ADJUSTMENT @METRICS_ADJUSTMENT_VALUE@
+

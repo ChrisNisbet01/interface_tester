@@ -13,6 +13,8 @@ char const Spassing_interval_secs[] = "passing_interval_secs";
 char const Sfailing_interval_secs[] = "failing_interval_secs";
 char const Spass_threshold[] = "pass_threshold";
 char const Sfail_threshold[] = "fail_threshold";
+#if WITH_METRICS_ADJUSTMENT
 char const Sfailing_tests_metrics_increase[] = "failing_tests_metrics_increase";
+#endif
 
 char const Sinterface_tester[] = "interface.tester";

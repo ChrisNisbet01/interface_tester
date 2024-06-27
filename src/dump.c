@@ -103,7 +103,9 @@ dump_tester_state(struct blob_buf * const b, interface_st const * const iface)
     blobmsg_add_string(
         b, "operational_state", interface_recovery_state_to_str(recovery->state));
 
+#if WITH_METRICS_ADJUSTMENT
     blobmsg_add_u8(b, "metrics_are_adjusted", recovery->metrics_are_adjusted);
+#endif
 
     dump_timer_state(b, &tester->test_response_timeout_timer);
     dump_timer_state(b, &tester->test_interval_timer);
@@ -205,7 +207,9 @@ interface_dump_config(interface_st * const iface, struct blob_buf * const b)
     blobmsg_add_u32(b, Spass_threshold, config->fail_threshold);
     blobmsg_add_u32(b, Sfail_threshold, config->pass_threshold);
     blobmsg_add_u32(b, Sresponse_timeout_secs, config->response_timeout_secs);
+#if WITH_METRICS_ADJUSTMENT
     blobmsg_add_u32(b, Sfailing_tests_metrics_increase, config->failing_tests_metrics_increase);
+#endif
 
     interface_dump_test_config(config, b);
     interface_dump_recovery_config(config, b);

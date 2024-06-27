@@ -1,5 +1,7 @@
 #pragma once
 
+#include "configure.h"
+
 extern char const Sconfig[];
 extern char const Stests[];
 extern char const Srecovery_tasks[];
@@ -13,6 +15,8 @@ extern char const Spassing_interval_secs[];
 extern char const Sfailing_interval_secs[];
 extern char const Spass_threshold[];
 extern char const Sfail_threshold[];
+#if WITH_METRICS_ADJUSTMENT
 extern char const Sfailing_tests_metrics_increase[];
+#endif
 
 extern char const Sinterface_tester[];

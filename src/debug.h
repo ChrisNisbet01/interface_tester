@@ -1,7 +1,8 @@
 #pragma once
 
+#include "configure.h"
 
-#ifdef DEBUG
+#if DEBUG
 #include <stdio.h>
 #include <inttypes.h>
 

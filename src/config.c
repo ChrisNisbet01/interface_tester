@@ -111,7 +111,9 @@ config_update(interface_st * const existing_iface, interface_st * const new_ifac
         || existing_config->pass_threshold != new_config->pass_threshold
         || existing_config->fail_threshold != new_config->fail_threshold
         || existing_config->response_timeout_secs != new_config->response_timeout_secs
+#if WITH_METRICS_ADJUSTMENT
         || existing_config->failing_tests_metrics_increase != new_config->failing_tests_metrics_increase
+#endif
         || existing_config->num_tests != new_config->num_tests
         || interface_tester_config_tests_changed(existing_config, new_config)
         || interface_tester_config_recoverys_changed(existing_config, new_config);
@@ -445,7 +447,9 @@ typedef enum interface_config_policy_t
     INTERFACE_CONFIG_RESPONSE_TIMEOUT,
     INTERFACE_CONFIG_TESTS,
     INTERFACE_CONFIG_RECOVERY,
+#if WITH_METRICS_ADJUSTMENT
     INTERFACE_CONFIG_FAILING_TESTS_METRICS_INCREASE,
+#endif
     INTERFACE_CONFIG_COUNT,
 } interface_config_policy_t;
 
@@ -469,8 +473,10 @@ static const struct blobmsg_policy interface_config_policy[INTERFACE_CONFIG_COUN
         { .name = Stests, .type = BLOBMSG_TYPE_ARRAY },
     [INTERFACE_CONFIG_RECOVERY] =
         {.name = Srecovery_tasks, .type = BLOBMSG_TYPE_ARRAY },
+#if WITH_METRICS_ADJUSTMENT
     [INTERFACE_CONFIG_FAILING_TESTS_METRICS_INCREASE] =
         {.name = Sfailing_tests_metrics_increase, .type = BLOBMSG_TYPE_INT32 },
+#endif
 };
 
 static int
@@ -520,7 +526,9 @@ interface_handle_config(
     config->pass_threshold = blobmsg_get_u32(tb[INTERFACE_CONFIG_PASS_THRESHOLD]);
     config->fail_threshold = blobmsg_get_u32(tb[INTERFACE_CONFIG_FAIL_THRESHOLD]);
     config->response_timeout_secs = blobmsg_get_u32(tb[INTERFACE_CONFIG_RESPONSE_TIMEOUT]);
+#if WITH_METRICS_ADJUSTMENT
     config->failing_tests_metrics_increase = blobmsg_get_u32(tb[INTERFACE_CONFIG_FAILING_TESTS_METRICS_INCREASE]);
+#endif
 
     if (!add_test_configurations(config, tb[INTERFACE_CONFIG_TESTS]))
     {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "configure.h"
 #include "tester_common.h"
 
 #include <libubus.h>
@@ -30,9 +31,11 @@ ubus_subscribe_to_interface_state_events(
 bool
 interface_get_current_state(struct ubus_context * ubus, char const * interface_name);
 
+#if WITH_METRICS_ADJUSTMENT
 bool
 ubus_send_metrics_adjust_request(
     struct ubus_context * ubus, char const * interface_name, uint32_t amount);
+#endif
 
 bool
 ubus_add_interface_object(interface_st * iface);

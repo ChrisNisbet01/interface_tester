@@ -1,5 +1,6 @@
 #pragma once
 
+#include "configure.h"
 #include "event_queue.h"
 #include "interface_tester_events.h"
 #include "process.h"
@@ -88,11 +89,13 @@ typedef struct interface_config_st
     /* The default maximum time to wait for an individual test to complete. */
     uint32_t response_timeout_secs;
 
+#if WITH_METRICS_ADJUSTMENT
     /*
      * The amount by which to increase the metrics of routes attached to this
      * interface when the tests are failing.
      */
     uint32_t failing_tests_metrics_increase;
+#endif
 
     size_t num_tests;
     test_config_st * tests;
@@ -111,7 +114,9 @@ typedef enum interface_recovery_state_t
 typedef struct interface_recovery_st
 {
     interface_recovery_state_t state;
+#if WITH_METRICS_ADJUSTMENT
     bool metrics_are_adjusted;
+#endif
     timer_st response_timeout_timer;
     size_t recovery_index;
     tester_process_st proc;
