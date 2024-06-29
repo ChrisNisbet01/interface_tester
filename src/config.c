@@ -39,54 +39,65 @@ static bool interface_tester_config_tests_changed(
     interface_config_st const * const existing_config,
     interface_config_st const * const new_config)
 {
+    bool changed;
+
     if (existing_config->num_tests != new_config->num_tests)
     {
-        return true;
+        changed = true;
+        goto done;
     }
+
     for (size_t i = 0; i < existing_config->num_tests; i++)
     {
         test_config_st const * const existing_test = &existing_config->tests[i];
         test_config_st const * const new_test = &new_config->tests[i];
-        bool const changed =
-            strcmp(existing_test->executable_name, new_test->executable_name) != 0
+
+        if (strcmp(existing_test->executable_name, new_test->executable_name) != 0
             || strcmp(existing_test->label, new_test->label) != 0
             || existing_test->response_timeout_secs != new_test->response_timeout_secs
-            || !blob_attr_equal(existing_test->params, new_test->params);
-
-        if (changed)
+            || !blob_attr_equal(existing_test->params, new_test->params))
         {
-            return true;
+            changed = true;
+            goto done;
         }
     }
 
-    return false;
+    changed = false;
+
+done:
+    return changed;
 }
 
 static bool interface_tester_config_recoverys_changed(
     interface_config_st const * const existing_config,
     interface_config_st const * const new_config)
 {
+    bool changed;
+
     if (existing_config->num_recoverys != new_config->num_recoverys)
     {
-        return true;
+        changed = true;
+        goto done;
     }
     for (size_t i = 0; i < existing_config->num_recoverys; i++)
     {
         recovery_config_st const * const existing_recovery = &existing_config->recoverys[i];
         recovery_config_st const * const new_recovery = &new_config->recoverys[i];
-        bool const changed =
-            strcmp(existing_recovery->executable_name, new_recovery->executable_name) != 0
+
+        if (strcmp(existing_recovery->executable_name, new_recovery->executable_name) != 0
             || strcmp(existing_recovery->label, new_recovery->label) != 0
             || existing_recovery->response_timeout_secs != new_recovery->response_timeout_secs
-            || !blob_attr_equal(existing_recovery->params, new_recovery->params);
-
-        if (changed)
+            || !blob_attr_equal(existing_recovery->params, new_recovery->params))
         {
-            return true;
+            changed = true;
+            goto done;
         }
     }
 
-    return false;
+    changed = false;
+
+done:
+    return changed;
 }
 
 static void
@@ -221,17 +232,20 @@ static bool add_test_configuration(
     blobmsg_parse(interface_test_config_policy, ARRAY_SIZE(tb), tb,
                   blobmsg_data(test), blobmsg_data_len(test));
 
-    if (tb[INTERFACE_TEST_CONFIG_EXECUTABLE] == NULL
-        || tb[INTERFACE_TEST_CONFIG_LABEL] == NULL
-        || tb[INTERFACE_TEST_CONFIG_PARAMS] == NULL)
+    if (tb[INTERFACE_TEST_CONFIG_EXECUTABLE] == NULL)
     {
         success = false;
         goto done;
     }
 
+    char const * const label =
+        tb[INTERFACE_TEST_CONFIG_LABEL] == NULL
+        ? ""
+        : blobmsg_get_string(tb[INTERFACE_TEST_CONFIG_LABEL]);
+
     config->index = index;
     config->executable_name = strdup(blobmsg_get_string(tb[INTERFACE_TEST_CONFIG_EXECUTABLE]));
-    config->label = strdup(blobmsg_get_string(tb[INTERFACE_TEST_CONFIG_LABEL]));
+    config->label = strdup(label);
     if (tb[INTERFACE_TEST_CONFIG_RESPONSE_TIMEOUT] != NULL)
     {
         config->response_timeout_secs = blobmsg_get_u32(tb[INTERFACE_TEST_CONFIG_RESPONSE_TIMEOUT]);
@@ -240,7 +254,20 @@ static bool add_test_configuration(
     {
         config->response_timeout_secs = 0;
     }
-    config->params = blob_memdup(tb[INTERFACE_TEST_CONFIG_PARAMS]);
+    if (tb[INTERFACE_TEST_CONFIG_PARAMS] != NULL)
+    {
+        config->params = blob_memdup(tb[INTERFACE_TEST_CONFIG_PARAMS]);
+    }
+    else
+    {
+        /* Add an empty "params" object just so it isn't NULL. */
+        struct blob_buf b = { 0 };
+
+        blob_buf_init(&b, 0);
+        blobmsg_close_table(&b, blobmsg_open_table(&b, Sparams));
+        config->params = blob_memdup(blobmsg_data(b.head));
+        blob_buf_free(&b);
+    }
 
     success = true;
 
@@ -320,17 +347,19 @@ static bool add_recovery_configuration(
     blobmsg_parse(interface_recovery_config_policy, ARRAY_SIZE(tb), tb,
                   blobmsg_data(recovery), blobmsg_data_len(recovery));
 
-    if (tb[INTERFACE_RECOVERY_CONFIG_EXECUTABLE] == NULL
-        || tb[INTERFACE_RECOVERY_CONFIG_LABEL] == NULL
-        || tb[INTERFACE_RECOVERY_CONFIG_PARAMS] == NULL)
+    if (tb[INTERFACE_RECOVERY_CONFIG_EXECUTABLE] == NULL)
     {
         success = false;
         goto done;
     }
 
+    char const * const label = tb[INTERFACE_RECOVERY_CONFIG_LABEL] == NULL
+        ? ""
+        : blobmsg_get_string(tb[INTERFACE_RECOVERY_CONFIG_LABEL]);
+
     config->index = index;
     config->executable_name = strdup(blobmsg_get_string(tb[INTERFACE_RECOVERY_CONFIG_EXECUTABLE]));
-    config->label = strdup(blobmsg_get_string(tb[INTERFACE_RECOVERY_CONFIG_LABEL]));
+    config->label = strdup(label);
     if (tb[INTERFACE_RECOVERY_CONFIG_RESPONSE_TIMEOUT] != NULL)
     {
         config->response_timeout_secs = blobmsg_get_u32(tb[INTERFACE_RECOVERY_CONFIG_RESPONSE_TIMEOUT]);
@@ -339,7 +368,20 @@ static bool add_recovery_configuration(
     {
         config->response_timeout_secs = 0;
     }
-    config->params = blob_memdup(tb[INTERFACE_RECOVERY_CONFIG_PARAMS]);
+    if (tb[INTERFACE_RECOVERY_CONFIG_PARAMS] != NULL)
+    {
+        config->params = blob_memdup(tb[INTERFACE_RECOVERY_CONFIG_PARAMS]);
+    }
+    else
+    {
+        /* Add an empty "params" object just so it isn't NULL. */
+        struct blob_buf b = { 0 };
+
+        blob_buf_init(&b, 0);
+        blobmsg_close_table(&b, blobmsg_open_table(&b, Sparams));
+        config->params = blob_memdup(blobmsg_data(b.head));
+        blob_buf_free(&b);
+    }
 
     success = true;
 
