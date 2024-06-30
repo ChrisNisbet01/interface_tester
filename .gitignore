@@ -6,3 +6,5 @@
 /interface_monitor.vpwwildcardcache
 /interface_monitor.vtg
 /scripts/test_dummy.txt
+*.pyc
+/tests/.idea/

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+interface=$1
+test_name=$2
+params=$3
+
+sleep_time=$(echo ${params} | jq -r ".sleep")
+
+[ -n "${sleep_time}" ] && sleep "${sleep_time}"
+
+exit 0
