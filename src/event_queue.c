@@ -40,8 +40,7 @@ event_queue_add_event(
 {
     if (event_queue->num_events >= ARRAY_SIZE(event_queue->events))
     {
-        DPRINTF("unable to stack the next event (%s)\n",
-                tester_event_to_str(event));
+        DLOG("unable to stack the next event (%s)", tester_event_to_str(event));
 
         goto done;
     }

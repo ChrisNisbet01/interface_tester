@@ -8,13 +8,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static void
+logging_init(
+    int const threshold,
+    int const channels,
+    int const facility,
+    char const * const ident)
+{
+    ulog_threshold(threshold);
+    ulog_open(channels, facility, ident);
+}
+
 static bool
 publish_objects(interface_tester_shared_st * const ctx)
 {
     bool success;
     struct ubus_context * const ubus = &ctx->ubus_conn.ctx;
 
-    DPRINTF("publishing objects\n");
+    DLOG("publishing objects");
 
     if (!ubus_add_main_object(ubus))
     {
@@ -39,7 +50,7 @@ ubus_connect_handler(struct ubus_context * const ubus)
     interface_tester_shared_st * const ctx =
             container_of(ubus, interface_tester_shared_st, ubus_conn.ctx);
 
-    DPRINTF("connected to ubus\n");
+    DLOG("connected to ubus");
 
     publish_objects(ctx);
     config_load_from_file_check(ctx);
@@ -78,12 +89,13 @@ usage(FILE * const fp, const char * const progname)
 {
     fprintf(fp, "Usage: %s [options]\n"
             "Options:\n"
-            " -c <path>:        Path to the configuration file\n"
-            " -s <path>:        Path to the ubus socket\n"
-            " -S <path>:        Path to the test executable directory\n"
-            " -r <path>:        Path to the recovery executable directory\n"
+            " -c <path>:              Path to the configuration file\n"
+            " -s <path>:              Path to the ubus socket\n"
+            " -S <path>:              Path to the test executable directory\n"
+            " -r <path>:              Path to the recovery executable directory\n"
+            " -t <logging threshold>: Logging threshold (default %d)\n"
             "\n",
-            progname);
+            progname, LOG_DEBUG);
 }
 
 int
@@ -95,8 +107,12 @@ main(int const argc, char * * const argv)
     const char * recovery_directory = NULL;
     const char * config_file = NULL;
     int ch;
+    int logging_threshold = LOG_DEBUG;
+    int logging_channels = ULOG_SYSLOG;
+    int logging_facility = LOG_DAEMON;
+    char const * const logging_id = "interface_tester";
 
-    while ((ch = getopt(argc, argv, "s:S:r:c:")) != -1)
+    while ((ch = getopt(argc, argv, "s:S:r:c:t:")) != -1)
     {
         switch(ch)
         {
@@ -116,19 +132,23 @@ main(int const argc, char * * const argv)
             recovery_directory = optarg;
             break;
 
+        case 't':
+            logging_threshold = strtoul(optarg, NULL, 0);
+            break;
+
         default:
             usage(stderr, argv[0]);
             return EXIT_FAILURE;
         }
     }
 
+    logging_init(logging_threshold, logging_channels, logging_facility, logging_id);
     uloop_init();
 
     context_init(&ctx, test_directory, recovery_directory, config_file);
     ubus_init(&ctx.ubus_conn, ubus_path, ubus_connect_handler);
 
-    printf("Interface tester started\n");
-    fflush(stdout);
+    ILOG("Interface tester started");
 
     uloop_run();
 

@@ -36,10 +36,11 @@ connection_state_transition(
 #ifdef DEBUG
     interface_st * const iface = container_of(connection, interface_st, connection);
 #endif
-    DPRINTF("%s: change state from %s -> %s\n",
-            iface->name,
-            interface_connection_state_to_str(connection->state),
-            interface_connection_state_to_str(new_state));
+    ILOG("%s: %s: change state from %s -> %s",
+         __func__,
+         iface->name,
+         interface_connection_state_to_str(connection->state),
+         interface_connection_state_to_str(new_state));
 
     connection->state = new_state;
 }
@@ -48,11 +49,11 @@ static void
 settling_delay_timer_stop(interface_connection_st * const connection)
 {
     timer_st * const t = &connection->settling_delay_timer;
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(connection, interface_st, connection);
 #endif
 
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     timer_stop(t);
 }
@@ -64,7 +65,7 @@ settling_delay_timer_expired(timer_st * const t)
         container_of(t, interface_connection_st, settling_delay_timer);
     interface_st * const iface = container_of(connection, interface_st, connection);
 
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     if (connection->state == CONNECTION_STATE_SETTLING)
     {
@@ -81,7 +82,7 @@ settling_delay_timer_start(interface_connection_st * const connection)
     uint32_t const settling_delay_msecs =
         iface->config.settling_delay_secs * msecs_per_sec;
 
-    DPRINTF("%s: delay: %u msecs\n", iface->name, settling_delay_msecs);
+    DLOG("%s: %s: delay: %u msecs", __func__, iface->name, settling_delay_msecs);
 
     timer_start(t, settling_delay_msecs);
 }
@@ -89,11 +90,11 @@ settling_delay_timer_start(interface_connection_st * const connection)
 void
 interface_connection_init(interface_connection_st * const connection)
 {
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(connection, interface_st, connection);
 #endif
 
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
     timer_init(
         &connection->settling_delay_timer, "settling_delay_timer", settling_delay_timer_expired);
     connection_state_transition(connection, CONNECTION_STATE_DISCONNECTED);
@@ -114,11 +115,11 @@ interface_connection_begin(interface_connection_st * const connection)
 void
 interface_connection_cleanup(interface_connection_st * const connection)
 {
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(connection, interface_st, connection);
 #endif
 
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     settling_delay_timer_stop(connection);
 }
@@ -130,7 +131,7 @@ interface_connection_connected(interface_connection_st * const connection)
     interface_st * const iface = container_of(connection, interface_st, connection);
 #endif
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s, %s", __func__, iface->name);
 
     if (connection->state == CONNECTION_STATE_DISCONNECTED)
     {
@@ -144,7 +145,7 @@ interface_connection_disconnected(interface_connection_st * const connection)
 {
     interface_st * const iface = container_of(connection, interface_st, connection);
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     if (connection->state != CONNECTION_STATE_DISCONNECTED)
     {

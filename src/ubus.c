@@ -411,8 +411,8 @@ ubus_send_metrics_adjust_request(
 
     if (ret != UBUS_STATUS_OK)
     {
-        DPRINTF("%s: failed to set metrics adjustment to %"PRIu32"\n",
-                interface_name, amount);
+        DLOG("%s: failed to set metrics adjustment to %"PRIu32,
+             interface_name, amount);
         goto done;
     }
     /* Else the state has been set by the callback. */
@@ -524,8 +524,8 @@ ubus_add_interface_object(interface_st * const iface)
     obj->name = name;
     if (ubus_add_object(ubus, obj) != UBUS_STATUS_OK)
     {
-        DPRINTF("%s: failed to publish ubus object for interface\n",
-                iface->name);
+        DLOG("%s: failed to publish ubus object for interface",
+             iface->name);
         free(name);
         obj->name = NULL;
         ret = false;
@@ -549,7 +549,7 @@ ubus_remove_interface_object(interface_st * const iface)
         goto done;
     }
 
-    DPRINTF("remove objects for interface: %s\n", iface->name);
+    DLOG("remove objects for interface: %s", iface->name);
 
     ubus_remove_object(ubus, obj);
     free_const(obj->name);
@@ -567,8 +567,8 @@ ubus_add_main_object(struct ubus_context * const ubus)
 
     if (!success)
     {
-        DPRINTF("Failed to publish object '%s': %s\n",
-                interface_tester_object.name, ubus_strerror(ret));
+        DLOG("Failed to publish object '%s': %s",
+             interface_tester_object.name, ubus_strerror(ret));
     }
 
     return success;

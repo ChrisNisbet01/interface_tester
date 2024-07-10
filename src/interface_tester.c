@@ -67,8 +67,8 @@ next_recovery_task_index(interface_recovery_st * const recovery)
     /* Shouldn't happen, but ensure the next_task index isn't out of bounds. */
     if (next_task >= iface->config.num_recoverys)
     {
-        DPRINTF("%s: task index out of bounds (%zu) - max is: %zu\n",
-                iface->name, next_task, iface->config.num_recoverys);
+        DLOG("%s: task index out of bounds (%zu) - max is: %zu",
+             iface->name, next_task, iface->config.num_recoverys);
 #ifdef DEBUG
         assert(false);
 #endif
@@ -95,10 +95,11 @@ recovery_state_transition(
     interface_st * const iface = container_of(recovery, interface_st, recovery);
 #endif
 
-    DPRINTF("%s: change state from %s -> %s\n",
-            iface->name,
-            interface_recovery_state_to_str(recovery->state),
-            interface_recovery_state_to_str(new_state));
+    ILOG("%s: %s: change state from %s -> %s",
+         __func__,
+         iface->name,
+         interface_recovery_state_to_str(recovery->state),
+         interface_recovery_state_to_str(new_state));
 
     recovery->state = new_state;
 }
@@ -111,10 +112,11 @@ tester_state_transition(
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
 
-    DPRINTF("%s: change state from %s -> %s\n",
-            iface->name,
-            interface_tester_state_to_str(tester->state),
-            interface_tester_state_to_str(new_state));
+    ILOG("%s: %s: change state from %s -> %s",
+         __func__,
+         iface->name,
+         interface_tester_state_to_str(tester->state),
+         interface_tester_state_to_str(new_state));
 
     tester->state = new_state;
 }
@@ -126,7 +128,7 @@ test_interval_timer_expired(timer_st * const t)
         container_of(t, interface_tester_st, test_interval_timer);
     interface_st * const iface = container_of(tester, interface_st, tester);
 
-    DPRINTF("%s: test interval timer expired\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     interface_tester_send_event(iface, TESTER_EVENT_INTERVAL_TIMER_ELAPSED);
 }
@@ -140,7 +142,7 @@ tester_interval_timer_start(
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
 
-    DPRINTF("%s: %" PRIu32 " msecs\n", iface->name, timeout_msecs);
+    ILOG("%s: %s: %" PRIu32 " msecs", __func__, iface->name, timeout_msecs);
 
     timer_start(t, timeout_msecs);
 }
@@ -149,11 +151,11 @@ static void
 tester_interval_timer_stop(interface_tester_st * const tester)
 {
     timer_st * const t = &tester->test_interval_timer;
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
 
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     timer_stop(t);
 }
@@ -162,11 +164,11 @@ static void
 tester_response_timer_stop(interface_tester_st * const tester)
 {
     timer_st * const t = &tester->test_response_timeout_timer;
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
 
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     timer_stop(t);
 }
@@ -178,7 +180,7 @@ test_response_timer_expired(timer_st * const t)
         container_of(t, interface_tester_st, test_response_timeout_timer);
     interface_st * const iface = container_of(tester, interface_st, tester);
 
-    DPRINTF("%s:\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     interface_tester_send_event(iface, TESTER_EVENT_TEST_TIMED_OUT);
 }
@@ -188,12 +190,12 @@ test_response_timer_start(
     interface_tester_st * const tester, uint32_t const timeout_secs)
 {
     timer_st * const tmr = &tester->test_response_timeout_timer;
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
     uint32_t const timeout_msecs = timeout_secs * msecs_per_sec;
 
-    DPRINTF("%s: %" PRIu32 " msecs\n", iface->name, timeout_msecs);
+    DLOG("%s: %s: %" PRIu32 " msecs", __func__, iface->name, timeout_msecs);
 
     timer_start(tmr, timeout_msecs);
 }
@@ -215,7 +217,7 @@ test_completed(tester_process_st * const tester_proc, int const status)
     interface_st * const iface = container_of(tester, interface_st, tester);
     bool const test_passed = get_test_result_from_exit_status(status);
 
-    DPRINTF("%s:\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     tester->last_test_exit_code = status;
     tester->last_test_passed = test_passed;
@@ -252,13 +254,13 @@ run_test(
     argv[argc++] = params;
     argv[argc++] = NULL;
 
-    DPRINTF("running %s: test: %s (%zu)\n",
-            test_config->label, test_config->executable_name, test_config->index);
+    DLOG("running %s: test: %s (%zu)",
+         test_config->label, test_config->executable_name, test_config->index);
 
     tester->test_proc.cb = test_completed;
     if (!interface_tester_start_process(&tester->test_proc, argv, working_dir))
     {
-        DPRINTF("%s: failed to run test\n", interface_name);
+        DLOG("%s: failed to run test", interface_name);
 
         started_test = false;
         goto done;
@@ -308,7 +310,7 @@ recovery_task_timer_expired(timer_st * const t)
         container_of(t, interface_recovery_st, response_timeout_timer);
     interface_st * const iface = container_of(recovery, interface_st, recovery);
 
-    DPRINTF("%s:\n", iface->name);
+    ILOG("%s: %s:", __func__, iface->name);
 
     interface_tester_send_event(iface, TESTER_EVENT_RECOVERY_TASK_TIMED_OUT);
 }
@@ -318,12 +320,12 @@ recovery_response_timer_start(
     interface_recovery_st * const recovery, uint32_t const timeout_secs)
 {
     timer_st * const tmr = &recovery->response_timeout_timer;
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(recovery, interface_st, recovery);
 #endif
     uint32_t const timeout_msecs = timeout_secs * msecs_per_sec;
 
-    DPRINTF("%s: %" PRIu32 " msecs\n", iface->name, timeout_msecs);
+    DLOG("%s: %s: %" PRIu32 " msecs", __func__, iface->name, timeout_msecs);
 
     timer_start(tmr, timeout_msecs);
 }
@@ -336,7 +338,7 @@ recovery_task_completed(tester_process_st * const tester_proc, int const status)
         container_of(tester_proc, interface_recovery_st, proc);
     interface_st * const iface = container_of(recovery, interface_st, recovery);
 
-    DPRINTF("%s:\n", iface->name);
+    ILOG("%s: %s:", __func__, iface->name);
 
     interface_tester_send_event(iface, TESTER_EVENT_RECOVERY_TASK_ENDED);
 }
@@ -368,8 +370,8 @@ run_recovery_task(
     argv[argc++] = params;
     argv[argc++] = NULL;
 
-    DPRINTF("running %s: task: %s (%zu)\n",
-            recovery_config->label, recovery_config->executable_name, recovery_config->index);
+    DLOG("running %s: task: %s (%zu)",
+         recovery_config->label, recovery_config->executable_name, recovery_config->index);
 
     recovery->proc.cb = recovery_task_completed;
     if (!interface_tester_start_process(&recovery->proc, argv, working_dir))
@@ -397,7 +399,7 @@ transition_to_operational_state(interface_st * const iface)
 {
     interface_recovery_st * const recovery = &iface->recovery;
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     recovery_state_transition(recovery, RECOVERY_STATE_OPERATIONAL);
     recovery->recovery_index = 0;
@@ -418,7 +420,7 @@ transition_to_broken_state(interface_st * const iface)
 {
     interface_recovery_st * const recovery = &iface->recovery;
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     recovery_state_transition(recovery, RECOVERY_STATE_BROKEN);
 
@@ -453,13 +455,13 @@ interface_test_run_passed(interface_recovery_st * const recovery)
     stats->total_passes_this_connection++;
     stats->total_passes++;
 
-    DPRINTF("%s: consecutive test run passes: %"PRIu64"\n",
-            iface->name, tester->stats.test_runs.consecutive_passes);
+    ILOG("%s: %s: consecutive test run passes: %"PRIu64,
+         __func__, iface->name, tester->stats.test_runs.consecutive_passes);
 
     if (recovery->state == RECOVERY_STATE_BROKEN
         && tester->stats.test_runs.consecutive_passes == config->pass_threshold)
     {
-        DPRINTF("%s: Pass threshold reached\n", iface->name);
+        ILOG("%s: Pass threshold reached", iface->name);
         transition_to_operational_state(iface);
     }
 }
@@ -477,8 +479,8 @@ interface_test_run_failed(interface_recovery_st * const recovery)
     stats->total_failures_this_connection++;
     stats->total_failures++;
 
-    DPRINTF("%s: consecutive test run failures: %"PRIu64"\n",
-            iface->name, tester->stats.test_runs.consecutive_failures);
+    ILOG("%s: %s: consecutive test run failures: %"PRIu64,
+         __func__, iface->name, tester->stats.test_runs.consecutive_failures);
 
     bool have_reached_failure_threshold =
         config->fail_threshold == 0
@@ -489,7 +491,7 @@ interface_test_run_failed(interface_recovery_st * const recovery)
     {
         if (recovery->state == RECOVERY_STATE_OPERATIONAL)
         {
-            DPRINTF("%s: Failure threshold reached\n", iface->name);
+            ILOG("%s: Failure threshold reached", iface->name);
             transition_to_broken_state(iface);
         }
 
@@ -526,7 +528,7 @@ interface_test_run_completed(interface_tester_st * const tester, bool const pass
     interface_st * const iface = container_of(tester, interface_st, tester);
     interface_recovery_st * const recovery = &iface->recovery;
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     tester->test_index = 0;
     ubus_send_interface_test_run_event(
@@ -551,7 +553,7 @@ interface_test_passed(interface_tester_st * const tester)
 {
     interface_st * const iface = container_of(tester, interface_st, tester);
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     test_statistics_st * const stats = &tester->stats.tests;
 
@@ -595,9 +597,9 @@ interface_test_passed(interface_tester_st * const tester)
     else
     {
         /* Shouldn't happen. */
-        DPRINTF("%s: unexpected test run success condition (%d)\n",
-                iface->name, iface->config.success_condition->condition);
-#ifdef DEBUG
+        DLOG("%s: unexpected test run success condition (%d)",
+             iface->name, iface->config.success_condition->condition);
+#if DEBUG
         assert(false);
 #endif
     }
@@ -608,7 +610,7 @@ interface_test_failed(interface_tester_st * const tester)
 {
     interface_st * const iface = container_of(tester, interface_st, tester);
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     test_statistics_st * const stats = &tester->stats.tests;
 
@@ -652,9 +654,9 @@ interface_test_failed(interface_tester_st * const tester)
     else
     {
         /* Shouldn't happen. */
-        DPRINTF("%s: unexpected test run success condition (%d)\n",
-                iface->name, iface->config.success_condition->condition);
-#ifdef DEBUG
+        DLOG("%s: unexpected test run success condition (%d)",
+             iface->name, iface->config.success_condition->condition);
+#if DEBUG
         assert(false);
 #endif
     }
@@ -663,11 +665,11 @@ interface_test_failed(interface_tester_st * const tester)
 static void
 tester_initialise_per_connection_statistics(interface_tester_st * const tester)
 {
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
 
-    DPRINTF("%s: setting initial test state\n", iface->name);
+    DLOG("%s: setting initial test state", iface->name);
 
     tester->stats.tests.total_passes_this_connection = 0;
     tester->stats.tests.total_failures_this_connection = 0;
@@ -694,14 +696,13 @@ tester_stop(interface_tester_st * const tester)
 
 static void tester_start_disconnected(interface_tester_st * const tester)
 {
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(tester, interface_st, tester);
 #else
     UNUSED(tester);
 #endif
 
-    DPRINTF("%s: isn't testable (connected), so won't start testing\n",
-            iface->name);
+    DLOG("%s: isn't testable (connected), so won't start testing", iface->name);
 }
 
 static void tester_start_connected(interface_tester_st * const tester)
@@ -767,7 +768,7 @@ static void tester_init(interface_tester_st * const tester)
 void
 interface_tester_initialise(interface_st * const iface)
 {
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     event_queue_init(&iface->event_queue);
     interface_connection_init(&iface->connection);
@@ -778,7 +779,7 @@ interface_tester_initialise(interface_st * const iface)
 void
 interface_tester_begin(interface_st * const iface)
 {
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     transition_to_operational_state(iface);
     interface_connection_begin(&iface->connection);
@@ -787,7 +788,7 @@ interface_tester_begin(interface_st * const iface)
 void
 interface_tester_cleanup(interface_st * const iface)
 {
-    DPRINTF("%s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     recovery_cleanup(&iface->recovery);
     interface_connection_cleanup(&iface->connection);
@@ -800,7 +801,7 @@ interface_tester_stop(interface_st * const iface)
     /* Occurs with a context configuration change. */
     interface_tester_st * const tester = &iface->tester;
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     tester_stop(tester);
 }
@@ -815,7 +816,7 @@ interface_tester_start(interface_st * const iface)
      */
     interface_tester_st * const tester = &iface->tester;
 
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     iface->recovery.recovery_index = 0;
     tester_start(tester);
@@ -979,16 +980,16 @@ tester_event_handler(void * const event_ctx, tester_event_t const event)
 {
     interface_tester_st * const tester = event_ctx;
     bool handled_event = false;
-#ifdef DEBUG
+#if DEBUG
     interface_st * const iface = container_of(tester, interface_st, tester);
 #endif
 
-    DPRINTF("%s: handling event: %s in state %s\n",
-            iface->name,
-            tester_event_to_str(event),
-            interface_tester_state_to_str(tester->state));
+    DLOG("%s: handling event: %s in state %s",
+         iface->name,
+         tester_event_to_str(event),
+         interface_tester_state_to_str(tester->state));
 
-#ifdef DEBUG
+#if DEBUG
     assert(tester->state < ARRAY_SIZE(tester_event_handler_fns));
     assert(tester_event_handler_fns[tester->state] != NULL);
 #endif
@@ -997,17 +998,17 @@ tester_event_handler(void * const event_ctx, tester_event_t const event)
 
     if (handled_event)
     {
-        DPRINTF("%s: handled event: %s - state now: %s\n",
-                iface->name,
-                tester_event_to_str(event),
-                interface_tester_state_to_str(tester->state));
+        DLOG("%s: handled event: %s - state now: %s",
+             iface->name,
+             tester_event_to_str(event),
+             interface_tester_state_to_str(tester->state));
     }
     else
     {
-        DPRINTF("%s: unhandled event: %s in state: %s\n",
-                iface->name,
-                tester_event_to_str(event),
-                interface_tester_state_to_str(tester->state));
+        DLOG("%s: unhandled event: %s in state: %s",
+             iface->name,
+             tester_event_to_str(event),
+             interface_tester_state_to_str(tester->state));
     }
 }
 

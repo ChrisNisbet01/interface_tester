@@ -63,31 +63,31 @@ endfunction()
 print_build_options()
 
 add_executable(${EXE_NAME}
-        main.c
-        config.c
-        config.h
-        debug.h
-        dump.c
-        dump.h
-        event_queue.c
-        event_queue.h
-        tester_common.c
-        tester_common.h
-        interface_connection.c
-        interface_connection.h
-        interface_tester.c
-        interface_tester.h
-        interface_tester_events.h
-        process.c
-        process.h
-        shared.h
-        strings.c
-        strings.h
-        ubus.c
-        ubus.h
-        utils.h
-        timers.c
-        timers.h
+    main.c
+    config.c
+    config.h
+    debug.h
+    dump.c
+    dump.h
+    event_queue.c
+    event_queue.h
+    tester_common.c
+    tester_common.h
+    interface_connection.c
+    interface_connection.h
+    interface_tester.c
+    interface_tester.h
+    interface_tester_events.h
+    process.c
+    process.h
+    shared.h
+    strings.c
+    strings.h
+    ubus.c
+    ubus.h
+    utils.h
+    timers.c
+    timers.h
 )
 
 target_link_libraries(${EXE_NAME}

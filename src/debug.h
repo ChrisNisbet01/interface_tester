@@ -2,12 +2,15 @@
 
 #include "configure.h"
 
-#if DEBUG
-#include <stdio.h>
+#include <libubox/ulog.h>
+
 #include <inttypes.h>
 
-#define DPRINTF(format, ...) fprintf(stderr, "%s(%d): " format, __func__, __LINE__, ## __VA_ARGS__)
+#if DEBUG
+#define DLOG(format, ...) ulog(LOG_DEBUG, format, ## __VA_ARGS__)
 #else
-#define DPRINTF(format, ...) do {} while (0)
+#define DLOG(format, ...) do {} while (0)
 #endif
+
+#define ILOG(format, ...) ulog(LOG_INFO, format, ## __VA_ARGS__)
 

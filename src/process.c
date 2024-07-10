@@ -67,8 +67,8 @@ interface_tester_start_process(
         {
             if (chdir(working_dir) < 0)
             {
-                DPRINTF("chdir to: %s failed: %s\n",
-                        working_dir, strerror(errno)); _exit(EXIT_FAILURE);
+                DLOG("chdir to: %s failed: %s",
+                     working_dir, strerror(errno)); _exit(EXIT_FAILURE);
             }
         }
         redirect_fd(-1, STDIN_FILENO, O_RDONLY);

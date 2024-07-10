@@ -18,7 +18,7 @@
 static bool
 ubus_publish_interface_object(interface_st * const iface)
 {
-    DPRINTF(": %s\n", iface->name);
+    DLOG("%s: %s", __func__, iface->name);
 
     return ubus_add_interface_object(iface);
 }
@@ -110,7 +110,7 @@ config_update(interface_st * const existing_iface, interface_st * const new_ifac
     interface_config_st * const existing_config = &existing_iface->config;
     interface_config_st * const new_config = &new_iface->config;
 
-    DPRINTF("%s\n", existing_iface->name);
+    ILOG("%s: %s", __func__, existing_iface->name);
 
     bool changed =
         existing_config->success_condition != new_config->success_condition
@@ -147,7 +147,7 @@ config_update(interface_st * const existing_iface, interface_st * const new_ifac
 static void
 config_add(interface_st * const iface)
 {
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     ubus_publish_interface_object(iface);
     interface_tester_begin(iface);
@@ -156,7 +156,7 @@ config_add(interface_st * const iface)
 static void
 config_remove(interface_st * const iface)
 {
-    DPRINTF("%s\n", iface->name);
+    ILOG("%s: %s", __func__, iface->name);
 
     interface_tester_free(iface);
 }
@@ -283,7 +283,7 @@ add_test_configurations(
 
     if (blobmsg_type(tests) != BLOBMSG_TYPE_ARRAY)
     {
-        DPRINTF("tests not an array\n");
+        DLOG("tests not an array");
 
         success = false;
         goto done;
@@ -307,7 +307,7 @@ add_test_configurations(
     {
         if (!add_test_configuration(&config->tests[config->num_tests], cur, config->num_tests))
         {
-            DPRINTF("failed to add test %zu\n", config->num_tests);
+            DLOG("failed to add test %zu", config->num_tests);
 
             success = false;
             goto done;
@@ -397,7 +397,7 @@ add_recovery_configurations(
 
     if (blobmsg_type(recoverys) != BLOBMSG_TYPE_ARRAY)
     {
-        DPRINTF("recoverys not an array\n");
+        DLOG("recoverys not an array");
 
         success = false;
         goto done;
@@ -420,7 +420,7 @@ add_recovery_configurations(
     {
         if (!add_recovery_configuration(&config->recoverys[config->num_recoverys], cur, config->num_recoverys))
         {
-            DPRINTF("failed to add recovery %zu\n", config->num_recoverys);
+            DLOG("failed to add recovery %zu", config->num_recoverys);
 
             success = false;
             goto done;
@@ -531,7 +531,7 @@ interface_handle_config(
 
     if (iface_name == NULL)
     {
-        DPRINTF("failed to get interface name\n");
+        DLOG("%s: failed to get interface name", __func__);
 
         goto done;
     }
@@ -541,7 +541,7 @@ interface_handle_config(
                         tb, blobmsg_data(msg), blobmsg_data_len(msg));
     if (res != UBUS_STATUS_OK)
     {
-        DPRINTF("failed to parse config: %s\n", ubus_strerror(res));
+        DLOG("failed to parse config: %s", ubus_strerror(res));
 
         goto done;
     }
@@ -550,7 +550,7 @@ interface_handle_config(
     {
         if (tb[i] == NULL)
         {
-            DPRINTF("missing required data: %s\n", interface_config_policy[i].name);
+            DLOG("missing required data: %s", interface_config_policy[i].name);
 
             goto done;
         }
@@ -574,21 +574,21 @@ interface_handle_config(
 
     if (!add_test_configurations(config, tb[INTERFACE_CONFIG_TESTS]))
     {
-        DPRINTF("failed to add test configuration\n");
+        DLOG("failed to add test configuration");
 
         goto done;
     }
 
     if (!add_recovery_configurations(config, tb[INTERFACE_CONFIG_RECOVERY]))
     {
-        DPRINTF("failed to add recovery configuration\n");
+        DLOG("failed to add recovery configuration");
 
         goto done;
     }
 
     if (!interface_config_validate(config))
     {
-        DPRINTF("config failed validation\n");
+        DLOG("config failed validation");
 
         goto done;
     }
@@ -623,7 +623,7 @@ config_load_config(
     struct blob_attr * cur;
     size_t rem;
 
-    DPRINTF("\n");
+    DLOG("%s", __func__);
 
     struct blob_attr * tb[INTERFACE_TESTER_COUNT];
 
@@ -669,7 +669,7 @@ config_load_from_file_check(interface_tester_shared_st * const ctx)
 {
     char const * const config_file = ctx->config_file;
 
-    DPRINTF("Config file: %s\n", config_file);
+    DLOG("Config file: %s", config_file);
 
     if (config_file == NULL)
     {
@@ -682,11 +682,11 @@ config_load_from_file_check(interface_tester_shared_st * const ctx)
 
     if (!blobmsg_add_json_from_file(&b, config_file))
     {
-        DPRINTF("Failed to load config from: %s\n", config_file);
+        DLOG("Failed to load config from: %s", config_file);
     }
     else if (!config_load_config(ctx, b.head))
     {
-        DPRINTF("Failed to load config blob\n");
+        DLOG("Failed to load config blob");
     }
 
     blob_buf_free(&b);
